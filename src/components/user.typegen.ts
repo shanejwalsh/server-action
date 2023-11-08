@@ -3,10 +3,11 @@
 export interface Typegen0 {
   '@@xstate/typegen': true;
   internalEvents: {
+    '': { type: '' };
     'xstate.init': { type: 'xstate.init' };
   };
   invokeSrcNameMap: {
-    getUser: 'done.invoke.nameOf.loadingUser:invocation[0]';
+    getUser: 'done.invoke.userMachine.loadingUser:invocation[0]';
   };
   missingImplementations: {
     actions: never;
@@ -16,10 +17,12 @@ export interface Typegen0 {
   };
   eventsCausingActions: {};
   eventsCausingDelays: {};
-  eventsCausingGuards: {};
+  eventsCausingGuards: {
+    isUserEven: '';
+  };
   eventsCausingServices: {
     getUser: 'load.user';
   };
-  matchesStates: 'idle' | 'loadingUser';
+  matchesStates: 'idle' | 'idle.even' | 'idle.odd' | 'loadingUser' | { idle?: 'even' | 'odd' };
   tags: never;
 }

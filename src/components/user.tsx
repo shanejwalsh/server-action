@@ -6,9 +6,17 @@ import React, { useEffect } from 'react';
 import { assign, createMachine } from 'xstate';
 import { useMachine } from '@xstate/react';
 
+import { inspect } from '@xstate/inspect';
+
+if (typeof window !== undefined) {
+  inspect({
+    iframe: false, // open in new window
+  });
+}
+
 const userMachine = createMachine(
   {
-    id: 'nameOf',
+    id: 'userMachine',
     tsTypes: {} as import('./user.typegen').Typegen0,
     schema: {
       context: {} as { user?: User; userId?: number },
@@ -23,6 +31,18 @@ const userMachine = createMachine(
     initial: 'idle',
     states: {
       idle: {
+        initial: 'odd',
+        states: {
+          even: {},
+          odd: {
+            always: [
+              {
+                cond: 'isUserEven',
+                target: 'even',
+              },
+            ],
+          },
+        },
         on: {
           'load.user': {
             actions: [
@@ -50,6 +70,11 @@ const userMachine = createMachine(
     },
   },
   {
+    guards: {
+      isUserEven: (context) => {
+        return Number(context.user?.id) % 2 === 0;
+      },
+    },
     services: {
       getUser: (context) => {
         if (!context.userId) throw new Error('no user id');
@@ -60,7 +85,9 @@ const userMachine = createMachine(
 );
 
 function UserCard() {
-  const [userState, sendUser] = useMachine(userMachine);
+  const [userState, sendUser] = useMachine(userMachine, {
+    devTools: true,
+  });
   const [count, setCount] = React.useState(0);
 
   useEffect(() => {
@@ -72,6 +99,7 @@ function UserCard() {
   return (
     <div>
       {count}
+      {String(userState.matches('idle.even'))}
       <div className="p-6 bg-slate-300 rounded-md shadow-md mb-2">
         {userState.matches('loadingUser') ? (
           <h1 className="text-lg">Loading...</h1>
@@ -84,6 +112,7 @@ function UserCard() {
           </>
         )}
       </div>
+      {!userState.matches('loadingUser') && <h1>User is {userState.matches('idle.even') ? 'Even' : 'Odd'}</h1>}
       <div className="flex gap-4">
         <button className="bg-white p-2 border-m rounded-sm" onClick={() => setCount((count) => (count += 1))}>
           inc count
